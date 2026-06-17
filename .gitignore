@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Local model/cache/config artifacts
+.config/
+Ultralytics/
+*.pt
+models/*.pt
+
+# Runtime inputs and outputs
+input/*
+!input/.gitkeep
+output/*
+!output/.gitkeep
+
+# Local scratch files
+todo*.txt
