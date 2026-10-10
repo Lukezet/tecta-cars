@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DetectaImages</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="#today">DetectaImages</a>
+    <nav aria-label="Navegación principal">
+      <button class="nav-link active" data-view="today">Hoy</button>
+      <button class="nav-link" data-view="history">Historial</button>
+      <button class="nav-link" data-view="settings">Configuración</button>
+    </nav>
+    <span id="global-status" class="status-badge neutral">○ Sin configurar</span>
+  </header>
+
+  <main>
+    <section id="alert" class="alert hidden" role="alert"></section>
+
+    <section id="view-today" class="view">
+      <div class="page-heading">
+        <div><p class="eyebrow">OPERACIÓN DIARIA</p><h1>Hoy</h1></div>
+        <button id="open-adjustment" class="button secondary">Ajustar conteo</button>
+      </div>
+      <div class="metrics">
+        <article class="metric-card primary-metric"><span>Servicios de hoy</span><strong id="final-total">0</strong></article>
+        <article class="metric-card"><span>Automáticos</span><strong id="automatic-total">0</strong></article>
+        <article class="metric-card"><span>Ajustes</span><strong id="adjustment-total">0</strong></article>
+        <article class="metric-card"><span>Estado</span><strong id="engine-state">Sin configurar</strong></article>
+      </div>
+
+      <div class="dashboard-grid">
+        <article class="panel camera-panel">
+          <div class="panel-heading"><div><h2>Cámara en vivo</h2><p id="last-frame">Sin imágenes</p></div><button id="open-zone" class="button ghost">Configurar zona</button></div>
+          <div class="video-stage"><img id="live-video" src="/api/video" alt="Transmisión en vivo de la zona de lavado"><div id="video-empty" class="empty-overlay">Configurá la cámara y la zona para comenzar.</div></div>
+        </article>
+        <article class="panel tracks-panel">
+          <h2>Vehículos activos</h2>
+          <div id="active-tracks" class="stack"><p class="empty">No hay vehículos dentro de la zona.</p></div>
+        </article>
+      </div>
+
+      <article class="panel activity-panel">
+        <div class="panel-heading"><h2>Actividad reciente</h2><button class="button ghost navigate-history">Ver historial completo</button></div>
+        <div id="recent-activity" class="activity-list"><p class="empty">Todavía no hay actividad registrada.</p></div>
+      </article>
+    </section>
+
+    <section id="view-history" class="view hidden">
+      <div class="page-heading"><div><p class="eyebrow">AUDITORÍA</p><h1>Historial</h1></div></div>
+      <div class="filters"><label>Fecha<input id="history-date" type="date"></label><button id="refresh-history" class="button secondary">Aplicar</button></div>
+      <div class="metrics compact"><article class="metric-card"><span>Total final</span><strong id="history-total">0</strong></article><article class="metric-card"><span>Automáticos</span><strong id="history-automatic">0</strong></article><article class="metric-card"><span>Ajustes</span><strong id="history-adjustments">0</strong></article></div>
+      <article class="panel table-wrap"><table><thead><tr><th>Hora</th><th>Evidencia</th><th>Patente</th><th>Color</th><th>Origen</th><th>Detalle</th></tr></thead><tbody id="history-body"></tbody></table></article>
+    </section>
+
+    <section id="view-settings" class="view hidden">
+      <div class="page-heading"><div><p class="eyebrow">INSTALACIÓN</p><h1>Configuración</h1></div></div>
+      <div class="settings-grid">
+        <form id="camera-form" class="panel form-panel">
+          <h2>Cámara</h2>
+          <label>Dirección IP<input id="camera-host" required value="192.168.1.41"></label>
+          <div class="form-row"><label>Puerto RTSP<input id="camera-port" required type="number" min="1" max="65535" value="554"></label><label>Flujo<select id="camera-stream"><option>stream2</option><option>stream1</option></select></label></div>
+          <label>Usuario de Camera Account<input id="camera-username" required autocomplete="username"></label>
+          <label>Contraseña <span class="help">Dejala vacía para conservar la actual.</span><input id="camera-password" type="password" autocomplete="new-password"></label>
+          <button class="button primary" type="submit">Guardar configuración</button>
+          <p id="camera-feedback" class="feedback" aria-live="polite"></p>
+        </form>
+        <article class="panel form-panel"><h2>Zona de trabajo</h2><p>La cámara debe quedar fija y con el patrullaje desactivado.</p><p id="zone-status">No hay zona configurada.</p><button id="settings-open-zone" class="button secondary">Configurar zona</button></article>
+        <form id="capacity-form" class="panel form-panel">
+          <h2>Operación del lavadero</h2>
+          <label>Capacidad de la zona
+            <span class="help">Cantidad máxima de vehículos que caben realmente.</span>
+            <input id="max-vehicles" required type="number" min="1" step="1" value="2">
+          </label>
+          <button class="button primary" type="submit">Guardar capacidad</button>
+          <p id="capacity-feedback" class="feedback" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="adjustment-dialog">
+    <form id="adjustment-form" method="dialog">
+      <h2>Ajustar conteo de hoy</h2>
+      <fieldset><legend>Tipo de ajuste</legend><label class="radio"><input type="radio" name="delta" value="1" checked> Sumar un servicio</label><label class="radio"><input type="radio" name="delta" value="-1"> Restar un servicio</label></fieldset>
+      <label>Motivo<textarea id="adjustment-reason" required maxlength="500"></textarea></label>
+      <p id="adjustment-preview"></p>
+      <div class="dialog-actions"><button type="button" class="button ghost close-dialog">Cancelar</button><button type="submit" class="button primary">Confirmar ajuste</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="zone-dialog" class="wide-dialog">
+    <form id="zone-form" method="dialog">
+      <h2>Configurar zona de trabajo</h2>
+      <p class="warning-text">El conteo se reiniciará al guardar. Dejá la cámara fija y sin patrullaje.</p>
+      <div class="zone-editor"><canvas id="zone-canvas" width="960" height="540" aria-label="Editor visual de la zona"></canvas></div>
+      <p id="zone-help">Hacé clic sobre la imagen para marcar al menos 3 puntos.</p>
+      <div class="dialog-actions spread"><div><button type="button" id="undo-point" class="button ghost">Deshacer</button><button type="button" id="clear-zone" class="button danger-ghost">Borrar</button></div><div><button type="button" class="button ghost close-dialog">Cancelar</button><button type="submit" id="save-zone" class="button primary" disabled>Guardar y activar zona</button></div></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

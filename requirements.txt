@@ -1,3 +1,7 @@
 ultralytics>=8.2,<9
 opencv-python>=4.9,<5
 easyocr==1.7.2
+fastapi==0.142.2
+uvicorn==0.54.0
+keyring==25.7.0
+httpx==0.28.1
